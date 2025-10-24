@@ -1,0 +1,99 @@
+all: all-redirect
+
+#MPI_DIR = /ccc/products/openmpi-2.0.2/default/bin
+#MPICC   = /ccc/products/openmpi-2.0.2/default/bin/mpicc
+#MPIF77  = /ccc/products/openmpi-2.0.2/default/bin/mpif77
+#MPIEXEC = /ccc/products/openmpi-2.0.2/default/bin/mpiexec
+MPI_DIR = /ccc/products/intelmpi-2017.0.4.196/default/bin64
+MPICC   = /ccc/products/intelmpi-2017.0.4.196/default/bin64/mpicc
+MPIF77  = /ccc/products/intelmpi-2017.0.4.196/default/bin64/mpif77
+MPIEXEC = /ccc/products/intelmpi-2017.0.4.196/default/bin64/mpiexec
+MPIEXEC_NP = -n
+PNCDIR  = 
+OMPFLAG = -fopenmp
+
+# _XOPEN_SOURCE ensures that drand48 and friends are defined in stdlib.h
+# _POSIX_C_SOURCE=199506L and HAVE_NANOSLEEP should be set if
+# nanosleep is available
+#CFLAGS+= -g -O0 -Wall -D_XOPEN_SOURCE -D_POSIX_C_SOURCE=199506L -DHAVE_NANOSLEEP
+CFLAGS = -g -O2 -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -Drestrict=__restrict -DHAVE_DRAND48=1 -DHAVE_NANOSLEEP=1
+
+STDOBJS= mlife.o mlife-io-stdout.o mlife-pt2pt.o
+STDOMPOBJS= mlifeomp.o mlife-io-stdout.o mlife-pt2pt.o 
+STDOMP1OBJS= $(STDOMPOBJS) sweepomp1.o
+STDOMP2OBJS= $(STDOMPOBJS) sweepomp2.o
+STDOMP3OBJS= $(STDOMPOBJS) sweepomp3.o
+MPIOBJS= mlife.o mlife-io-mpiio.o mlife-pt2pt.o
+PNCOBJS= mlife.o mlife-io-pnetcdf.o mlife-pt2pt.o
+
+.c.o:	$?
+	$(MPICC) $(CFLAGS) -c $(?) -o $(@)
+.f.o:   $?
+	$(MPIF77) $(FFLAGS) -c $(?) -o $(@)
+
+EXECS = mlife mlife-mpiio mlife-fence mlife-pscw mlife2d 
+OMPEXECS = mlifeomp1 mlifeomp2 mlifeomp3
+
+default: mlife
+
+all-redirect: $(EXECS)
+
+mlife-io-pnetcdf.o: mlife-io-pnetcdf.c
+	$(MPICC) $(CFLAGS) -I$(PNCDIR)/include -c $(?) -o $(@)
+
+mlife: $(STDOBJS)
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) $(STDOBJS) $(LIBS)
+
+mlifeomp.o: mlifeomp.c
+	$(MPICC) $(CFLAGS) $(OMPFLAG) -c $? -o $@
+
+mlifeomp1: $(STDOMP1OBJS) 
+	$(MPICC) $(CFLAGS) $(OMPFLAG) -o $@ $(LDFLAGS) $(STDOMP1OBJS) $(LIBS)
+
+mlifeomp2: $(STDOMP2OBJS) 
+	$(MPICC) $(CFLAGS) $(OMPFLAG) -o $@ $(LDFLAGS) $(STDOMP2OBJS) $(LIBS)
+
+mlifeomp3: $(STDOMP3OBJS) 
+	$(MPICC) $(CFLAGS) $(OMPFLAG) -o $@ $(LDFLAGS) $(STDOMP3OBJS) $(LIBS)
+
+mlife-mpiio: $(MPIOBJS)
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) $(MPIOBJS) $(LIBS)
+
+mlife-pnetcdf: $(PNCOBJS)
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) -L$(PNCDIR)/lib $(PNCOBJS) $(LIBS) -lpnetcdf
+
+mlife2d: mlife2d.o mlife2d-io-stdout.o mlife2d-pt2pt.o
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) mlife2d.o mlife2d-io-stdout.o mlife2d-pt2pt.o $(LIBS)
+
+mlife-fence: mlife.o mlife-io-stdout.o mlife-fence.o
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) mlife.o mlife-io-stdout.o mlife-fence.o $(LIBS)
+
+mlife-pscw: mlife.o mlife-io-stdout.o mlife-pscw.o
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) mlife.o mlife-io-stdout.o mlife-pscw.o $(LIBS)
+
+mlife2d-fence: mlife2d.o mlife2d-io-stdout.o mlife2d-fence.o
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) mlife2d.o mlife2d-io-stdout.o mlife2d-fence.o $(LIBS)
+
+mlife2d1-fence: mlife2d.o mlife2d-io-stdout1.o mlife2d-fence.o
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) mlife2d.o mlife2d-io-stdout1.o mlife2d-fence.o $(LIBS)
+
+mlife2d1: mlife2d.o mlife2d-io-stdout1.o mlife2d-pt2pt.o
+	$(MPICC) $(CFLAGS) -o $@ $(LDFLAGS) mlife2d.o mlife2d-io-stdout1.o mlife2d-pt2pt.o $(LIBS)
+
+#
+# Fortran versions (not yet complete)
+mlife2df: mlife2df.o mlife2df-io-stdout.o mlife2df-pt2pt.o
+	$(MPIF77) $(FFLAGS) -o $@ $(LDFLAGS) mlife2df.o mlife2df-io-stdout.o mlife2df-pt2pt.o $(LIBS)
+mlife2df-fence: mlife2df.o mlife2df-io-stdout.o mlife2df-fence.o
+	$(MPIF77) $(FFLAGS) -o $@ $(LDFLAGS) mlife2df.o mlife2df-io-stdout.o mlife2df-fence.o $(LIBS)
+
+#
+mlife2d-fpmpi: mlife2d.o mlife2d-io-stdout.o mlife2d-pt2pt.o
+	$(MPICC) $(CFLAGS) -o mlife2d-fpmpi $(LDFLAGS) mlife2d.o mlife2d-io-stdout.o mlife2d-pt2pt.o -L -lfpmpi $(LIBS)
+
+clean::
+	rm -f *.o *.ps *.pdf $(EXECS) $(OMPEXECS) mlife-pnetcdf \
+	mlife2d-fence mlife2d-fpmpi fpmpi_profile.txt *.chkpt *.exe *.stackdump
+
+run: $(PROG)
+	$(MPIEXEC) $(MPIEXEC_NP) $(NP) $(PROG) $(ARGS)
