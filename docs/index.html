@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2A — Yahdhih ABDEL WEDOUD</title>
+  <style>
+    /* ── Reset & Variables ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2a2d3e;
+      --accent1:  #7c6ef7;   /* violet */
+      --accent2:  #4fc3f7;   /* bleu clair */
+      --accent3:  #66d9a0;   /* vert */
+      --accent4:  #ffa95c;   /* orange */
+      --accent5:  #f06292;   /* rose */
+      --text:     #e2e4f0;
+      --muted:    #7b7f96;
+      --radius:   12px;
+      --gap:      1.5rem;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 17, 23, .85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .75rem 2rem;
+    }
+    nav .brand { font-weight: 700; font-size: 1rem; color: var(--accent1); }
+    nav ul { list-style: none; display: flex; gap: 1.5rem; }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .875rem;
+      transition: color .2s;
+    }
+    nav a:hover { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,110,247,.18) 0%, transparent 70%);
+    }
+    .hero .badge {
+      display: inline-block;
+      background: rgba(124,110,247,.15);
+      border: 1px solid rgba(124,110,247,.35);
+      color: var(--accent1);
+      padding: .3rem .9rem;
+      border-radius: 99px;
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: .75rem;
+    }
+    .hero h1 span { color: var(--accent1); }
+    .hero p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 540px;
+      margin: 0 auto 2rem;
+    }
+    .hero .cta {
+      display: inline-flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: .6rem 1.4rem;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn:hover { opacity: .85; transform: translateY(-1px); }
+    .btn-primary { background: var(--accent1); color: #fff; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* ── Sections ── */
+    section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+    section h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    section h2::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Module Cards ── */
+    .modules { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: var(--gap); }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: border-color .2s, transform .2s;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .card:hover { border-color: var(--muted); transform: translateY(-3px); }
+    .card-header { display: flex; align-items: center; gap: .75rem; }
+    .card-icon {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .card h3 { font-size: 1.05rem; font-weight: 700; }
+    .card p { color: var(--muted); font-size: .9rem; flex: 1; }
+    .tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .tag {
+      font-size: .75rem;
+      font-weight: 600;
+      padding: .2rem .6rem;
+      border-radius: 99px;
+      border: 1px solid;
+    }
+
+    /* Couleurs par module */
+    .c1 .card-icon { background: rgba(124,110,247,.15); color: var(--accent1); }
+    .c1 .tag       { color: var(--accent1); border-color: rgba(124,110,247,.4); background: rgba(124,110,247,.08); }
+    .c2 .card-icon { background: rgba(79,195,247,.15); color: var(--accent2); }
+    .c2 .tag       { color: var(--accent2); border-color: rgba(79,195,247,.4);  background: rgba(79,195,247,.08); }
+    .c3 .card-icon { background: rgba(102,217,160,.15); color: var(--accent3); }
+    .c3 .tag       { color: var(--accent3); border-color: rgba(102,217,160,.4); background: rgba(102,217,160,.08); }
+    .c4 .card-icon { background: rgba(255,169,92,.15); color: var(--accent4); }
+    .c4 .tag       { color: var(--accent4); border-color: rgba(255,169,92,.4);  background: rgba(255,169,92,.08); }
+    .c5 .card-icon { background: rgba(240,98,146,.15); color: var(--accent5); }
+    .c5 .tag       { color: var(--accent5); border-color: rgba(240,98,146,.4);  background: rgba(240,98,146,.08); }
+
+    /* ── Key Concepts ── */
+    .concepts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: var(--gap); }
+    .concept-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+    }
+    .concept-block h4 {
+      font-size: .85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+    .concept-block ul { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+    .concept-block li {
+      font-size: .88rem;
+      display: flex;
+      align-items: flex-start;
+      gap: .5rem;
+    }
+    .concept-block li::before { content: '→'; color: var(--accent1); flex-shrink: 0; }
+
+    /* ── Projects ── */
+    .projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--gap); }
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      transition: border-color .2s, transform .2s;
+    }
+    .project-card:hover { border-color: var(--muted); transform: translateY(-3px); }
+    .project-card h3 { font-size: 1rem; font-weight: 700; }
+    .project-card p { color: var(--muted); font-size: .88rem; flex: 1; }
+    .project-card .link {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--accent1);
+      text-decoration: none;
+    }
+    .project-card .link:hover { text-decoration: underline; }
+
+    /* ── Skills Bar ── */
+    .skills { display: flex; flex-direction: column; gap: 1rem; }
+    .skill-row { display: flex; align-items: center; gap: 1rem; }
+    .skill-label { width: 120px; font-size: .875rem; color: var(--muted); flex-shrink: 0; }
+    .skill-bar { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .skill-fill { height: 100%; border-radius: 99px; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    footer a { color: var(--accent1); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="brand">2A — Yahdhih</span>
+  <ul>
+    <li><a href="#modules">Modules</a></li>
+    <li><a href="#concepts">Concepts</a></li>
+    <li><a href="#projets">Projets</a></li>
+    <li><a href="#competences">Compétences</a></li>
+  </ul>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="badge">Deuxième année — Ingénierie</div>
+  <h1>Ce que j'ai appris<br/><span>en 2ème année</span></h1>
+  <p>Synthèse des modules étudiés : systèmes, parallélisme, calcul scientifique et C++ moderne.</p>
+  <div class="cta">
+    <a href="https://github.com/Yahdhih/2A-" class="btn btn-primary" target="_blank">Voir le dépôt GitHub</a>
+    <a href="#modules" class="btn btn-ghost">Explorer ↓</a>
+  </div>
+</div>
+
+<!-- ── Modules ── -->
+<section id="modules">
+  <h2>Modules suivis</h2>
+  <div class="modules">
+
+    <!-- Architecture OS -->
+    <div class="card c1">
+      <div class="card-header">
+        <div class="card-icon">🖥️</div>
+        <h3>Architecture OS</h3>
+      </div>
+      <p>
+        Gestion de la mémoire virtuelle, implémentation d'un allocateur de tas
+        (<em>hp_allocator</em>), étude du scheduler CFS et des primitives de
+        synchronisation du noyau Linux.
+      </p>
+      <div class="tags">
+        <span class="tag">Mémoire virtuelle</span>
+        <span class="tag">malloc / free</span>
+        <span class="tag">CFS</span>
+        <span class="tag">Noyau Linux</span>
+        <span class="tag">LD_PRELOAD</span>
+      </div>
+    </div>
+
+    <!-- Assembleur -->
+    <div class="card c2">
+      <div class="card-header">
+        <div class="card-icon">⚙️</div>
+        <h3>Assembleur & Compilation</h3>
+      </div>
+      <p>
+        Programmation en assembleur RISC-V avec le simulateur Jupiter.
+        Étude du pipeline de compilation : préprocesseur, compilateur,
+        assembleur, éditeur de liens.
+      </p>
+      <div class="tags">
+        <span class="tag">RISC-V</span>
+        <span class="tag">Jupiter</span>
+        <span class="tag">ISA</span>
+        <span class="tag">Pipeline de compilation</span>
+      </div>
+    </div>
+
+    <!-- Prog Scientifique -->
+    <div class="card c3">
+      <div class="card-header">
+        <div class="card-icon">⚛️</div>
+        <h3>Programmation Scientifique</h3>
+      </div>
+      <p>
+        Résolution numérique de l'équation de Schrödinger pour l'oscillateur
+        harmonique quantique 1D. Implémentation des polynômes d'Hermite,
+        vérification d'orthonormalité par quadrature.
+      </p>
+      <div class="tags">
+        <span class="tag">C++11</span>
+        <span class="tag">Mécanique quantique</span>
+        <span class="tag">Polynômes de Hermite</span>
+        <span class="tag">Doxygen</span>
+        <span class="tag">GNU Make</span>
+      </div>
+    </div>
+
+    <!-- MPI -->
+    <div class="card c4">
+      <div class="card-header">
+        <div class="card-icon">🔗</div>
+        <h3>Programmation Parallèle MPI</h3>
+      </div>
+      <p>
+        Modèle SPMD, communications point à point et collectives (reduce,
+        scatter, gather, scan). Implémentation d'un scan préfixe manuel,
+        topologies cartésiennes, communications non bloquantes.
+      </p>
+      <div class="tags">
+        <span class="tag">MPI</span>
+        <span class="tag">SPMD</span>
+        <span class="tag">Collectif</span>
+        <span class="tag">Non bloquant</span>
+        <span class="tag">HPC</span>
+      </div>
+    </div>
+
+    <!-- C++ -->
+    <div class="card c5">
+      <div class="card-header">
+        <div class="card-icon">🧩</div>
+        <h3>Langages Objets Avancés</h3>
+      </div>
+      <p>
+        C++11 moderne : sémantique de valeur, lvalues/rvalues, règle des
+        0/3/5, foncteurs, surcharge d'opérateurs, STL avancée.
+        Projets en Qt (interface graphique, QTreeView).
+      </p>
+      <div class="tags">
+        <span class="tag">C++11</span>
+        <span class="tag">STL</span>
+        <span class="tag">Foncteurs</span>
+        <span class="tag">Qt</span>
+        <span class="tag">CMake</span>
+        <span class="tag">Move semantics</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Concepts clés ── -->
+<section id="concepts" style="background: rgba(26,29,39,.4); max-width: 100%; padding: 4rem 2rem;">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <h2>Concepts clés retenus</h2>
+    <div class="concepts-grid">
+
+      <div class="concept-block">
+        <h4>Mémoire & OS</h4>
+        <ul>
+          <li>Organisation segmentée d'un processus (text, data, heap, stack)</li>
+          <li>Translation d'adresses via MMU et tables de pages</li>
+          <li>Algorithmes first-fit, best-fit, buddy system</li>
+          <li>Wrapper <code>LD_PRELOAD</code> pour interposer malloc</li>
+          <li>Synchronisation noyau : mutex, spinlock, completion</li>
+        </ul>
+      </div>
+
+      <div class="concept-block">
+        <h4>Assembleur RISC-V</h4>
+        <ul>
+          <li>Architecture load/store — registres x0 à x31</li>
+          <li>Instructions arithmétiques, logiques, de branchement</li>
+          <li>Convention d'appel RISC-V (ra, sp, a0–a7, s0–s11)</li>
+          <li>Gestion de la pile (prologue / épilogue)</li>
+          <li>Étapes de la chaîne de compilation</li>
+        </ul>
+      </div>
+
+      <div class="concept-block">
+        <h4>Calcul scientifique</h4>
+        <ul>
+          <li>Équation de Schrödinger stationnaire (OHQ 1D)</li>
+          <li>Polynômes d'Hermite via récurrence à trois termes</li>
+          <li>Quadrature numérique pour vérifier l'orthonormalité</li>
+          <li>Unités physiques cohérentes (SI, MeV, fm)</li>
+          <li>Documentation avec Doxygen + présentation remark.js</li>
+        </ul>
+      </div>
+
+      <div class="concept-block">
+        <h4>MPI</h4>
+        <ul>
+          <li>Modèle SPMD — rang et taille du communicateur</li>
+          <li>Communications bloquantes vs. non bloquantes</li>
+          <li>Opérations collectives : reduce, scan, scatter/gather</li>
+          <li>Scan préfixe implémenté manuellement</li>
+          <li>Topologies cartésiennes pour grilles de calcul</li>
+        </ul>
+      </div>
+
+      <div class="concept-block">
+        <h4>C++ Moderne</h4>
+        <ul>
+          <li>Lvalues, rvalues, références de rvalue (<code>&&</code>)</li>
+          <li>Règle des 0/3/5 pour la gestion des ressources</li>
+          <li>Sémantique de déplacement (<em>move semantics</em>)</li>
+          <li>Foncteurs et algorithmes STL (<code>generate</code>, <code>transform</code>…)</li>
+          <li>Surcharge d'opérateurs et <code>const</code>-correctness</li>
+        </ul>
+      </div>
+
+      <div class="concept-block">
+        <h4>Outils & Pratiques</h4>
+        <ul>
+          <li>Contrôle de version avec Git (commits atomiques)</li>
+          <li>Systèmes de build : GNU Make, CMake</li>
+          <li>Benchmarking et analyse des résultats (Python, CSV)</li>
+          <li>Tests unitaires et vérification (R, Doxygen)</li>
+          <li>Organisation de projet : headers, src, doc</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Projets ── -->
+<section id="projets">
+  <h2>Projets réalisés</h2>
+  <div class="projects">
+
+    <div class="project-card">
+      <h3>🏆 hp_allocator + Benchmarks</h3>
+      <p>
+        Implémentation complète d'un allocateur de tas en C avec gestion de
+        liste libre, puis wrapper <code>LD_PRELOAD</code> permettant de
+        remplacer <code>malloc</code>/<code>free</code> système sans
+        recompiler l'application. Suite de benchmarks Python pour analyser
+        les performances.
+      </p>
+      <div class="tags" style="margin-top: auto;">
+        <span class="tag c1">C</span>
+        <span class="tag c1">Make</span>
+        <span class="tag c1">Python</span>
+      </div>
+      <a class="link" href="https://github.com/Yahdhih/2A-/tree/main/Architecture_OS/tps/tp_m%C3%A9moire" target="_blank">Voir le code →</a>
+    </div>
+
+    <div class="project-card">
+      <h3>📊 GCPA Calculator</h3>
+      <p>
+        Calculateur de GPA (Grade Point Average) en ligne de commande,
+        écrit en C++. Supporte les notes numériques et alphabétiques,
+        sauvegarde des résultats en JSON.
+      </p>
+      <div class="tags" style="margin-top: auto;">
+        <span class="tag c5">C++11</span>
+        <span class="tag c5">JSON</span>
+        <span class="tag c5">CLI</span>
+      </div>
+      <a class="link" href="https://github.com/Yahdhih/2A-/tree/main/Langages_Objets_avancees/projets/GCPA%20Calcutor" target="_blank">Voir le code →</a>
+    </div>
+
+    <div class="project-card">
+      <h3>🏥 Carnet Patients (Qt)</h3>
+      <p>
+        Application de bureau Qt pour gérer des patients et l'historique de
+        leurs visites. Interface QTreeView, validation des champs, recherche
+        multi-critères. Plan de développement sur 21 jours.
+      </p>
+      <div class="tags" style="margin-top: auto;">
+        <span class="tag c5">C++</span>
+        <span class="tag c5">Qt</span>
+        <span class="tag c5">QTreeView</span>
+        <span class="tag c5">CMake</span>
+      </div>
+      <a class="link" href="https://github.com/Yahdhih/2A-/tree/main/Langages_Objets_avancees/projets/Projet_LAOA_Carent_Patients" target="_blank">Voir le planning →</a>
+    </div>
+
+    <div class="project-card">
+      <h3>⚡ Exercices MPI</h3>
+      <p>
+        Implémentation manuelle d'un <em>scan préfixe</em> (somme inclusive)
+        via des communications point à point, et d'une réduction globale
+        suivie d'une redistribution à tous les processus.
+      </p>
+      <div class="tags" style="margin-top: auto;">
+        <span class="tag c4">C</span>
+        <span class="tag c4">MPI</span>
+        <span class="tag c4">HPC</span>
+      </div>
+      <a class="link" href="https://github.com/Yahdhih/2A-/tree/main/Programmation_parallele_MPI/exercices" target="_blank">Voir le code →</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Compétences ── -->
+<section id="competences" style="background: rgba(26,29,39,.4); max-width: 100%; padding: 4rem 2rem;">
+  <div style="max-width: 700px; margin: 0 auto;">
+    <h2>Compétences techniques</h2>
+    <div class="skills">
+      <div class="skill-row">
+        <span class="skill-label">C / C++11</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:88%;background:var(--accent5);"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">MPI</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:72%;background:var(--accent4);"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Assembleur RISC-V</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:65%;background:var(--accent2);"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">GNU Make / CMake</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:80%;background:var(--accent3);"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Python (analyse)</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:70%;background:var(--accent1);"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Qt (Widgets)</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:50%;background:var(--accent5);"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-label">Git</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:82%;background:var(--accent4);"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <p>
+    Yahdhih ABDEL WEDOUD — 2ème année ingénieur •
+    <a href="https://github.com/Yahdhih/2A-" target="_blank">github.com/Yahdhih/2A-</a>
+  </p>
+  <p style="margin-top:.5rem;">Généré depuis le dépôt de cours • 2025–2026</p>
+</footer>
+
+</body>
+</html>
