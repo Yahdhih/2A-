@@ -1,3 +1,1578 @@
-Fredric.combeau@cea.fr 
-rendu du secu 17/10/25 à 21h00
-# La sécurité informatique 
+# Notes complètes - Sécurité informatique en environnement HPC
+
+> Cours : **Architecture d’un système d’exploitation - Introduction à la sécurité informatique en environnement HPC**  
+> CEA / ENSIIE - Novembre 2022  
+> Objectif de cette note : fournir une version structurée, claire et révisable du cours sous format **README**.
+
+---
+
+## Table des matières
+
+1. [Objectif général du cours](#1-objectif-général-du-cours)
+2. [Les concepts fondamentaux de la sécurité informatique](#2-les-concepts-fondamentaux-de-la-sécurité-informatique)
+3. [Méthodologie de sécurité](#3-méthodologie-de-sécurité)
+4. [Spécificités de la sécurité en environnement HPC](#4-spécificités-de-la-sécurité-en-environnement-hpc)
+5. [Grands principes de sécurité](#5-grands-principes-de-sécurité)
+6. [Sécurité système](#6-sécurité-système)
+7. [Sécurité réseau](#7-sécurité-réseau)
+8. [Surveillance du système](#8-surveillance-du-système)
+9. [Exemples de menaces et d’attaques](#9-exemples-de-menaces-et-dattaques)
+10. [Checklist de révision](#10-checklist-de-révision)
+11. [Questions d’examen possibles](#11-questions-dexamen-possibles)
+
+---
+
+# 1. Objectif général du cours
+
+Ce cours présente les bases de la sécurité informatique appliquées aux systèmes d’exploitation, avec un focus particulier sur les environnements **HPC** (*High Performance Computing*), c’est-à-dire les centres de calcul et calculateurs intensifs.
+
+L’idée principale est la suivante :
+
+> Un système HPC n’est pas seulement un ensemble de machines puissantes. C’est un système critique, partagé par plusieurs utilisateurs, connecté au réseau, exposé à des menaces, et qui doit rester disponible, traçable et correctement cloisonné.
+
+Le cours aborde donc :
+
+- les concepts de base de la sécurité informatique ;
+- la méthodologie d’analyse des risques ;
+- les spécificités des centres de calcul HPC ;
+- les grands principes de défense ;
+- la sécurité système ;
+- la sécurité réseau ;
+- la surveillance et les logs ;
+- quelques menaces et attaques classiques.
+
+---
+
+# 2. Les concepts fondamentaux de la sécurité informatique
+
+La sécurité informatique repose sur quatre grandes propriétés :
+
+| Propriété | Définition simple | Exemples d’atteintes |
+|---|---|---|
+| **Confidentialité** | Empêcher les personnes non autorisées d’accéder aux données. | Usurpation d’identité, accès illicite, exfiltration de données. |
+| **Intégrité** | Empêcher la modification non autorisée des données, programmes ou configurations. | Modification de fichiers, suppression de données, modification de bibliothèques. |
+| **Disponibilité** | Garantir que les services et ressources restent accessibles. | Surcharge CPU, mémoire, disque, réseau, déni de service. |
+| **Non-répudiation** | Pouvoir prouver qu’une action a bien été réalisée par un acteur donné. | Suppression de traces, falsification de logs, contournement de l’accounting. |
+
+## 2.1 Confidentialité
+
+La confidentialité concerne la protection contre la fuite ou la consultation illégitime des informations.
+
+Dans un environnement HPC, les données peuvent être :
+
+- des résultats scientifiques ;
+- des codes propriétaires ;
+- des données industrielles ;
+- des données de recherche sensibles ;
+- des fichiers utilisateurs stockés sur des systèmes partagés.
+
+Une atteinte à la confidentialité peut venir :
+
+- d’un compte compromis ;
+- d’un mot de passe faible ;
+- d’un mauvais cloisonnement entre utilisateurs ;
+- d’une mauvaise configuration des droits fichiers ;
+- d’un transfert réseau non chiffré.
+
+## 2.2 Intégrité
+
+L’intégrité signifie que les données, programmes et configurations ne doivent pas être modifiés sans autorisation.
+
+Exemples :
+
+- modification d’un script de calcul ;
+- remplacement d’une bibliothèque système ;
+- altération des résultats d’un calcul ;
+- modification d’un fichier de configuration ;
+- effacement volontaire ou accidentel de données.
+
+Dans le HPC, l’intégrité est critique, car un code modifié peut fausser des résultats scientifiques ou industriels.
+
+## 2.3 Disponibilité
+
+La disponibilité garantit que le système reste opérationnel.
+
+Dans le HPC, c’est très important car les ressources sont coûteuses et souvent réservées ou contractualisées.
+
+Menaces possibles :
+
+- saturation CPU ;
+- saturation mémoire ;
+- saturation disque ;
+- surcharge réseau ;
+- déni de service ;
+- panne d’un service central ;
+- mauvaise mise à jour.
+
+## 2.4 Non-répudiation
+
+La non-répudiation permet de dire :
+
+> Cette action a été faite par tel utilisateur, à telle date, depuis tel hôte.
+
+Elle repose sur :
+
+- les logs ;
+- l’authentification ;
+- la traçabilité ;
+- l’accounting ;
+- la protection de l’intégrité des journaux.
+
+Dans un centre HPC, elle sert aussi à la facturation ou à l’imputation des ressources utilisées.
+
+---
+
+# 3. Méthodologie de sécurité
+
+La méthodologie du cours repose sur une chaîne logique :
+
+```text
+Menace + Vulnérabilité  ->  Risque  ->  Impact  ->  Mesures  ->  Vérifications
+```
+
+## 3.1 Menace
+
+Une menace est un événement ou un acteur capable d’exploiter une vulnérabilité.
+
+Exemples :
+
+- attaquant externe ;
+- utilisateur malveillant ;
+- logiciel vulnérable ;
+- erreur humaine ;
+- panne matérielle ;
+- inondation ou incident physique.
+
+Une menace n’est donc pas forcément un hacker : un événement naturel ou une erreur humaine peut aussi être une menace.
+
+## 3.2 Vulnérabilité
+
+Une vulnérabilité est une faiblesse technique ou humaine qui permet de provoquer une action non prévue.
+
+Exemples :
+
+- mot de passe faible ;
+- service mal configuré ;
+- logiciel non mis à jour ;
+- droits fichiers trop permissifs ;
+- politique sudo trop large ;
+- utilisateur mal formé ;
+- absence de surveillance.
+
+Une vulnérabilité correspond souvent à une perte de contrôle : contrôle du logiciel, du flux de commandes, des données ou des procédures.
+
+## 3.3 Risque
+
+Un risque est la possibilité qu’une menace exploite une vulnérabilité et cause un dommage.
+
+Il se caractérise par :
+
+- une probabilité ou possibilité d’occurrence ;
+- un impact potentiel.
+
+Formule simplifiée :
+
+```text
+Risque = Probabilité d’exploitation x Impact
+```
+
+Exemple :
+
+```text
+Mot de passe faible + attaquant externe -> risque de vol de données
+```
+
+## 3.4 Impact
+
+L’impact est la conséquence concrète d’un risque réalisé.
+
+Exemples :
+
+- perte financière ;
+- perte d’image ;
+- perte de compétitivité ;
+- indisponibilité du service ;
+- fuite de données ;
+- altération de résultats ;
+- perte de confiance des utilisateurs.
+
+L’évaluation de l’impact permet de décider si un risque est acceptable ou non.
+
+## 3.5 Mesures
+
+Une mesure est une action technique ou organisationnelle destinée à réduire le risque.
+
+Elle peut agir sur :
+
+| Élément visé | Exemple de mesure |
+|---|---|
+| **La menace** | Réduire la surface d’attaque, filtrer les accès réseau. |
+| **La vulnérabilité** | Appliquer des mises à jour, corriger une configuration. |
+| **L’impact** | Surveiller, détecter, isoler rapidement une machine compromise. |
+
+Exemples de mesures :
+
+- politique de mots de passe ;
+- authentification à deux facteurs ;
+- cloisonnement réseau ;
+- logs centralisés ;
+- audit régulier ;
+- gestion des correctifs ;
+- formation des utilisateurs.
+
+## 3.6 Vérifications
+
+Les menaces et vulnérabilités évoluent constamment. Il faut donc vérifier régulièrement que les mesures restent efficaces.
+
+Exemples de vérifications :
+
+- audit de politique de sécurité ;
+- audit de vulnérabilités ;
+- test de pénétration ;
+- analyse des logs ;
+- vérification de conformité ;
+- contrôle des mises à jour.
+
+## 3.7 Exemple complet
+
+```text
+Menace          : usurpation d’identité
+Vulnérabilité   : mot de passe faible
+Risque          : vol de données
+Impact          : perte financière, atteinte à l’image, perte de compétitivité
+Politique       : politique de composition des mots de passe + double facteur
+Mesures         : contrôle de robustesse du mot de passe + MFA
+Vérifications   : audit, test de pénétration, analyse des vulnérabilités
+```
+
+---
+
+# 4. Spécificités de la sécurité en environnement HPC
+
+Un environnement HPC présente des contraintes particulières par rapport à un système informatique classique.
+
+## 4.1 Utilisateur virtuel
+
+Dans un centre HPC, l’utilisateur ne se connecte généralement pas physiquement au calculateur.
+
+Il accède au système via le réseau :
+
+- SSH ;
+- portail web ;
+- VPN ;
+- passerelle d’accès ;
+- outil de soumission de jobs.
+
+Conséquence :
+
+> Le réseau devient le principal point d’entrée du système.
+
+Il faut donc sécuriser :
+
+- l’authentification ;
+- le chiffrement des connexions ;
+- les postes clients ;
+- les flux entrants ;
+- les flux sortants.
+
+## 4.2 Poste client non maîtrisé
+
+L’utilisateur peut se connecter depuis :
+
+- un ordinateur personnel ;
+- un réseau non maîtrisé ;
+- un site partenaire ;
+- un réseau universitaire ;
+- un réseau étranger.
+
+Le centre HPC ne maîtrise pas toujours la sécurité du poste client.
+
+Risques :
+
+- vol d’identifiants ;
+- malware sur le poste client ;
+- interception réseau ;
+- clé SSH compromise ;
+- réutilisation de mot de passe.
+
+## 4.3 Surface d’attaque réseau
+
+Le HPC a une surface d’attaque importante :
+
+- accès Internet entrant ;
+- accès Internet sortant ;
+- services d’authentification ;
+- portails ;
+- passerelles SSH ;
+- transferts de données ;
+- API ou outils web.
+
+Il faut garantir une bonne bande passante tout en limitant les accès aux sites légitimes.
+
+## 4.4 Cloisonnement
+
+Le HPC est partagé par plusieurs utilisateurs ou populations d’utilisateurs.
+
+Objectifs :
+
+- protéger les données de chaque utilisateur ;
+- éviter qu’un utilisateur voie les processus d’un autre ;
+- séparer les projets sensibles ;
+- éviter les rebonds internes ;
+- limiter l’impact d’un compte compromis.
+
+Le cloisonnement peut être :
+
+- système : droits Unix, chroot, cgroups, SELinux ;
+- réseau : pare-feu, VLAN, DMZ, ACL ;
+- applicatif : authentification par service, proxy, portail ;
+- organisationnel : séparation des rôles.
+
+## 4.5 Puissance de calcul disponible
+
+Un centre HPC attire les attaquants car il offre :
+
+- beaucoup de CPU ;
+- beaucoup de mémoire ;
+- un grand stockage ;
+- une forte bande passante ;
+- parfois des GPU.
+
+Utilisations malveillantes possibles :
+
+- brute force ;
+- minage de cryptomonnaie ;
+- déni de service distribué ;
+- stockage illicite ;
+- rebond vers d’autres machines.
+
+## 4.6 Impact de la sécurité sur les performances
+
+En HPC, la sécurité ne doit pas dégrader fortement les performances.
+
+Difficulté :
+
+- trop de contrôles peuvent ralentir les calculs ;
+- trop de logs peuvent saturer le stockage ;
+- trop de chiffrement peut réduire les performances réseau ou disque ;
+- trop de filtrage peut augmenter la latence.
+
+Il faut donc choisir des mesures efficaces mais adaptées aux contraintes HPC.
+
+## 4.7 Disponibilité
+
+La disponibilité est souvent contractuelle dans le HPC.
+
+Elle concerne :
+
+- le calcul ;
+- le stockage ;
+- le réseau ;
+- les services d’authentification ;
+- les ordonnanceurs ;
+- les portails utilisateurs.
+
+## 4.8 Traçabilité
+
+La traçabilité est importante pour :
+
+- la sécurité ;
+- l’accounting ;
+- la facturation ;
+- la supervision ;
+- la détection ;
+- la réponse à incident.
+
+Dans le HPC, le volume de logs peut être énorme. Il faut donc collecter, stocker, traiter et corréler beaucoup de données.
+
+---
+
+# 5. Grands principes de sécurité
+
+## 5.1 Système minimal
+
+Principe :
+
+> Installer uniquement ce qui est strictement nécessaire.
+
+Pourquoi ?
+
+- moins d’applications = moins de vulnérabilités ;
+- moins de services = moins de surface d’attaque ;
+- moins d’outils = moins d’aide pour un intrus ;
+- moins de composants = plus facile à maintenir ;
+- moins de fichiers = plus facile à contrôler.
+
+Règle importante :
+
+> Le niveau de sécurité d’un système est souvent celui de son composant le moins sécurisé.
+
+Exemples de bonnes pratiques :
+
+- désinstaller les paquets inutiles ;
+- désactiver les services non utilisés ;
+- fermer les ports inutiles ;
+- limiter les outils disponibles sur les serveurs exposés ;
+- contrôler régulièrement les services actifs.
+
+## 5.2 Tout interdire par défaut
+
+Principe :
+
+> En sécurité, tout doit être interdit par défaut, puis on autorise uniquement le nécessaire.
+
+Configuration typique :
+
+```text
+1. Règles explicites d’autorisation
+2. Règle finale : tout interdire
+```
+
+Avantage :
+
+- les cas oubliés sont bloqués ;
+- les flux imprévus ne passent pas ;
+- la politique reste maîtrisée.
+
+Erreur à éviter :
+
+```text
+Autoriser tout pendant le débogage puis oublier cette règle en production.
+```
+
+## 5.3 Séparation des privilèges
+
+Principe :
+
+> Un programme ne doit utiliser des privilèges élevés que lorsqu’il en a réellement besoin.
+
+Exemple :
+
+- un service a besoin de root pour ouvrir un port privilégié ;
+- ensuite il abandonne root et fonctionne avec un utilisateur dédié.
+
+Intérêt :
+
+- si le service est compromis, l’attaquant n’obtient pas directement tous les privilèges ;
+- l’impact d’une vulnérabilité est réduit ;
+- les phases critiques sont mieux maîtrisées.
+
+Concept proche : **principe du moindre privilège**.
+
+## 5.4 Mises à jour
+
+Les mises à jour sont un pilier de la sécurité.
+
+Elles permettent de corriger :
+
+- vulnérabilités logicielles ;
+- failles du noyau ;
+- failles de bibliothèques ;
+- problèmes de configuration ;
+- bugs critiques.
+
+Difficultés :
+
+- risque de casser une fonctionnalité ;
+- besoin de redémarrer un service ;
+- besoin de rebooter le système ;
+- incompatibilité avec certains logiciels ;
+- contrainte de disponibilité.
+
+Bonne pratique :
+
+- définir une politique de mises à jour ;
+- tester les mises à jour ;
+- appliquer dans un délai raisonnable ;
+- vérifier l’état réel des versions installées.
+
+## 5.5 Surveillance
+
+Principe :
+
+> On ne peut pas empêcher toutes les attaques, donc il faut détecter vite et réagir vite.
+
+La surveillance permet :
+
+- de détecter une intrusion ;
+- de limiter l’impact ;
+- d’isoler une machine compromise ;
+- de couper un accès réseau ;
+- de vérifier l’intégrité du système ;
+- de conserver des preuves.
+
+Elle repose sur :
+
+- logs système ;
+- logs réseau ;
+- auditd ;
+- accounting ;
+- supervision ;
+- intégrité des fichiers ;
+- corrélation d’événements.
+
+## 5.6 Sécurité en profondeur
+
+Principe :
+
+> Il vaut mieux placer plusieurs barrières complémentaires qu’une seule grande barrière.
+
+Exemples :
+
+- un pare-feu central ne remplace pas un pare-feu local ;
+- une authentification MFA à l’entrée ne remplace pas l’authentification sur chaque service ;
+- un VPN ne remplace pas la gestion des droits Unix ;
+- SELinux ne remplace pas les permissions fichiers classiques.
+
+Objectif :
+
+- multiplier les obstacles ;
+- limiter les mouvements latéraux ;
+- ralentir l’attaquant ;
+- améliorer la détection ;
+- réduire l’impact.
+
+## 5.7 Architecture sécurisée
+
+La sécurité doit être pensée dans l’architecture.
+
+Mauvaise architecture :
+
+```text
+Internet -> Pare-feu -> réseau interne plat
+```
+
+Problème : si un élément interne est compromis, l’attaquant peut se déplacer facilement.
+
+Bonne architecture :
+
+```text
+Internet
+   |
+Pare-feu
+   |
+DMZ
+   |
+Pare-feu interne
+   |
+Zones séparées : serveurs A, serveurs B, stations, services communs
+```
+
+Critères de cloisonnement :
+
+- sensibilité ;
+- exposition ;
+- criticité ;
+- vulnérabilités résiduelles ;
+- population d’utilisateurs ;
+- type de service.
+
+---
+
+# 6. Sécurité système
+
+## 6.1 Authentification
+
+Il faut distinguer deux notions :
+
+| Notion | Rôle |
+|---|---|
+| **Identification** | Dire qui on est. Exemple : login. |
+| **Authentification** | Prouver que l’on est bien cette personne. Exemple : mot de passe. |
+
+Méthodes d’authentification :
+
+| Facteur | Exemple |
+|---|---|
+| Ce que l’on connaît | Mot de passe, code PIN, OTP. |
+| Ce que l’on possède | Token, carte à puce, calculette, clé matérielle. |
+| Ce que l’on est | Biométrie. |
+
+Remarque importante : la biométrie est difficile à révoquer. Si une empreinte est copiée, on ne peut pas la changer comme un mot de passe.
+
+### Authentification simple facteur et double facteur
+
+- **Simple facteur** : un seul élément, par exemple un mot de passe.
+- **Double facteur** : deux éléments de types différents, par exemple mot de passe + token.
+
+### Authentification locale ou centralisée
+
+| Type | Exemple |
+|---|---|
+| Locale | Mot de passe stocké sur une machine. |
+| Centralisée | LDAP, Radius, Kerberos. |
+
+### Single Sign-On, SSO
+
+Le SSO permet de s’authentifier une fois, puis d’utiliser un jeton logiciel pour accéder à plusieurs services.
+
+Risque :
+
+> Si le jeton SSO est volé, l’attaquant peut prendre l’identité de l’utilisateur sur plusieurs services.
+
+## 6.2 PAM - Pluggable Authentication Modules
+
+PAM permet de déléguer l’authentification à une bibliothèque commune.
+
+Idée :
+
+> L’application n’implémente pas elle-même toutes les méthodes d’authentification. Elle appelle PAM, et PAM applique la politique définie.
+
+Les configurations sont dans :
+
+```bash
+/etc/pam.d/
+```
+
+Exemple :
+
+```bash
+/etc/pam.d/sshd
+/etc/pam.d/login
+```
+
+Syntaxe générale :
+
+```text
+<catégorie> <contrôle> <module_PAM_avec_paramètres>
+```
+
+### Catégories PAM
+
+| Catégorie | Rôle |
+|---|---|
+| `auth` | Vérifie l’identité et l’authentification. |
+| `account` | Vérifie l’état du compte : expiration, groupe, autorisation. |
+| `password` | Gère la mise à jour du mot de passe. |
+| `session` | Prépare la session : logs, montage du HOME, environnement. |
+
+### Contrôles PAM
+
+| Contrôle | Effet |
+|---|---|
+| `requisite` | Obligatoire. En cas d’échec, arrêt immédiat et résultat négatif. |
+| `required` | Obligatoire. En cas d’échec, on continue mais le résultat final sera négatif. |
+| `sufficient` | Non obligatoire. En cas de succès, peut suffire à valider si aucun `required` précédent n’a échoué. |
+| `optional` | Pris en compte seulement si aucun autre module pertinent n’est présent. |
+
+Attention : une mauvaise configuration PAM peut désactiver l’authentification ou donner trop d’informations à un attaquant.
+
+## 6.3 Permissions Unix sur les fichiers
+
+Sous Unix, tout est fichier. Chaque fichier a :
+
+- un propriétaire ;
+- un groupe ;
+- des droits pour le propriétaire ;
+- des droits pour le groupe ;
+- des droits pour les autres.
+
+Exemple :
+
+```bash
+-rwxrw-r-- 1 frederic frederic 94 sept. 11 20:27 toto.sh
+```
+
+Interprétation :
+
+```text
+-       fichier classique
+rwx     propriétaire : lecture, écriture, exécution
+rw-     groupe : lecture, écriture
+r--     autres : lecture seulement
+```
+
+### Types de fichiers
+
+| Symbole | Type |
+|---|---|
+| `-` | Fichier classique |
+| `d` | Répertoire |
+| `l` | Lien symbolique |
+| `c` | Périphérique caractère |
+| `b` | Périphérique bloc |
+| `p` | Pipe |
+| `s` | Socket |
+
+### Droits classiques
+
+| Droit | Signification fichier | Signification répertoire |
+|---|---|---|
+| `r` | Lire le fichier | Lister les entrées du répertoire |
+| `w` | Modifier le fichier | Ajouter, supprimer, renommer des entrées |
+| `x` | Exécuter le fichier | Traverser le répertoire, faire `cd` |
+
+### Bits spéciaux
+
+| Bit | Sur fichier | Sur répertoire |
+|---|---|---|
+| `setuid` | Exécution avec l’identité du propriétaire du fichier. | Rarement utilisé. |
+| `setgid` | Exécution avec le groupe du fichier. | Les fichiers créés héritent du groupe du répertoire. |
+| `sticky bit` | Historiquement : garder l’exécutable en mémoire. | Seul le propriétaire peut supprimer ses fichiers, utile pour `/tmp`. |
+
+### Notation octale
+
+| Octal | Droits |
+|---|---|
+| `0755` | `rwxr-xr-x` |
+| `0640` | `rw-r-----` |
+| `4740` | `rwsr-----` |
+
+Commandes à connaître :
+
+```bash
+chmod
+chown
+chgrp
+umask
+```
+
+## 6.4 ACL - Access Control Lists
+
+Les ACL permettent d’aller au-delà du modèle propriétaire/groupe/autres.
+
+Elles permettent par exemple :
+
+```text
+Donner un accès en lecture à un utilisateur précis, sans changer le groupe du fichier.
+```
+
+Commandes :
+
+```bash
+getfacl fichier
+setfacl -m u:alice:r fichier
+```
+
+Points d’attention :
+
+- tous les systèmes de fichiers ne supportent pas les ACL ;
+- certains systèmes réseau comme NFS peuvent poser problème selon les versions ;
+- certains outils de sauvegarde ne conservent pas toujours les ACL.
+
+## 6.5 chroot
+
+`chroot` signifie **change root**.
+
+Il permet de changer la racine `/` vue par un processus.
+
+Idée :
+
+```text
+Le processus croit que son répertoire de chroot est la racine du système.
+```
+
+Objectifs :
+
+- limiter l’environnement visible ;
+- cacher le reste du système ;
+- contenir une compromission ;
+- fournir seulement les fichiers nécessaires : exécutables, bibliothèques, configuration, logs.
+
+Limites :
+
+- difficile à construire et maintenir ;
+- ne protège que le système de fichiers ;
+- ne protège pas contre les failles noyau ;
+- des méthodes de sortie du chroot peuvent exister ;
+- demande une bonne maîtrise des dépendances.
+
+Conclusion :
+
+> chroot est une première barrière, pas une sécurité complète.
+
+## 6.6 cgroups
+
+Les **control groups** sont une fonctionnalité du noyau Linux.
+
+Ils permettent de :
+
+- limiter CPU, mémoire, I/O, réseau ;
+- isoler des processus via namespaces ;
+- comptabiliser les ressources ;
+- prioriser certains groupes ;
+- contrôler l’arrêt, sauvegarde, redémarrage.
+
+Lien important :
+
+> Les cgroups et namespaces sont à la base de LXC et Docker.
+
+Dans le HPC, ils sont utiles pour :
+
+- limiter la consommation d’un job ;
+- isoler des utilisateurs ;
+- facturer les ressources ;
+- éviter qu’un processus consomme tout le système.
+
+## 6.7 su et sudo
+
+### su
+
+`su` signifie **switch user**.
+
+Il permet de changer d’identité, souvent vers `root`.
+
+Il demande l’authentification du compte cible.
+
+À surveiller car il montre :
+
+- une volonté de changer d’identité ;
+- la connaissance du mot de passe d’un autre compte ;
+- un possible partage d’identifiants.
+
+### sudo
+
+`sudo` permet d’exécuter certaines commandes avec les droits d’un autre utilisateur.
+
+La configuration est dans :
+
+```bash
+/etc/sudoers
+```
+
+Exemples :
+
+```text
+frederic ALL = (ALL) ALL
+%wheel  ALL = NOPASSWD ALL
+%mount  ALL = NOPASSWD /bin/mount, /bin/umount
+```
+
+Avantages de `sudo` :
+
+- meilleure traçabilité que le compte root générique ;
+- délégation fine ;
+- possibilité de limiter les commandes autorisées.
+
+Erreurs à éviter :
+
+- donner `ALL` trop largement ;
+- autoriser des commandes qui ouvrent un shell ;
+- autoriser tous les programmes d’un répertoire ;
+- utiliser `!` pour interdire quelques commandes au lieu d’appliquer l’interdiction par défaut.
+
+## 6.8 Comptes captifs et shell restreint
+
+### Comptes de service
+
+Les services comme `sshd`, `mysql`, `apache` peuvent tourner sous des utilisateurs dédiés.
+
+Ces comptes ne doivent pas permettre une connexion interactive.
+
+Exemple :
+
+```bash
+/bin/false
+```
+
+### Compte captif
+
+Un compte captif n’a pas de shell classique. Son shell est remplacé par une application.
+
+Quand l’application se ferme, l’utilisateur est déconnecté.
+
+Utilité :
+
+- soumission de jobs ;
+- accès à une base de données ;
+- publication web ;
+- redirection de flux réseau ;
+- accès limité à un outil.
+
+Attention : l’application utilisée comme shell ne doit pas permettre de lancer un shell interactif.
+
+### Shell restreint
+
+Un shell restreint est un shell interactif limité.
+
+Exemple :
+
+```bash
+rbash
+```
+
+Restrictions possibles :
+
+- limiter l’utilisateur à son HOME ;
+- bloquer la modification de `PATH` ;
+- interdire les commandes hors du PATH ;
+- limiter les redirections d’entrée/sortie.
+
+## 6.9 Chiffrement de système de fichiers
+
+Linux propose LUKS, utilisé via `cryptsetup`.
+
+Principe :
+
+- le chiffrement s’applique sur un périphérique brut ;
+- le système de fichiers est créé ensuite ;
+- le volume possède une clé de chiffrement aléatoire ;
+- cette clé est elle-même chiffrée avec une ou plusieurs clés utilisateur.
+
+À l’ouverture du volume, une clé utilisateur est nécessaire.
+
+Bon usage :
+
+> Le chiffrement est réellement utile comme cloisonnement si le volume est monté uniquement au moment du besoin.
+
+Problème central :
+
+```text
+Gestion des clés : composition, stockage, séquestre, transmission, brute force.
+```
+
+## 6.10 DAC versus MAC
+
+### DAC - Discretionary Access Control
+
+Dans le DAC, le propriétaire d’un objet choisit qui peut y accéder.
+
+Exemple : permissions Unix classiques.
+
+Caractéristique :
+
+> Le système applique les droits choisis par le propriétaire.
+
+### MAC - Mandatory Access Control
+
+Dans le MAC, c’est le système qui définit les règles d’accès.
+
+Il repose sur :
+
+- labels de sécurité ;
+- politique centrale ;
+- règles imposées par le système ;
+- contrôle au niveau noyau.
+
+Exemple : SELinux.
+
+Différence essentielle :
+
+| DAC | MAC |
+|---|---|
+| Le propriétaire décide. | Le système décide. |
+| Plus souple. | Plus strict. |
+| Moins fort pour le cloisonnement. | Plus fort pour le confinement. |
+
+## 6.11 SELinux
+
+SELinux signifie **Security-Enhanced Linux**.
+
+Il ajoute un contrôle MAC au noyau Linux.
+
+Objectif :
+
+> Confiner les applications et réduire la toute-puissance de root.
+
+SELinux utilise des labels :
+
+```text
+utilisateur:role:type:niveau
+```
+
+Exemple :
+
+```text
+system_u:object_r:httpd_sys_content_t:s0
+```
+
+Une règle peut ressembler à :
+
+```text
+allow httpd_t httpd_sys_content_t:file { read write create getattr setattr lock append unlink link rename open };
+```
+
+Fonctionnement :
+
+1. Un sujet demande un accès à un objet.
+2. SELinux cherche une règle qui autorise cet accès.
+3. Si aucune règle n’existe, l’accès est refusé.
+4. Si une règle existe, les permissions classiques Unix sont aussi vérifiées.
+
+Conclusion :
+
+> SELinux est très puissant pour le cloisonnement, mais difficile à configurer et maintenir.
+
+---
+
+# 7. Sécurité réseau
+
+## 7.1 Pare-feu
+
+Un pare-feu se place en coupure d’une liaison réseau.
+
+Rôle :
+
+- autoriser certains flux ;
+- interdire les autres ;
+- tracer les connexions ;
+- filtrer selon IP, TCP, UDP ;
+- parfois gérer le NAT.
+
+### Stateless versus Stateful
+
+| Type | Description |
+|---|---|
+| Stateless | Filtre paquet par paquet sans mémoire de connexion. |
+| Stateful | Suit l’état des connexions TCP/UDP. |
+
+### NAT - Network Address Translation
+
+Le NAT peut servir à :
+
+- masquer un réseau interne ;
+- utiliser des adresses privées non routables ;
+- rediriger des flux vers des machines dédiées ;
+- publier un service interne vers l’extérieur.
+
+### Haute disponibilité
+
+Le pare-feu peut devenir un **Single Point of Failure**.
+
+Il faut donc souvent prévoir :
+
+- redondance ;
+- haute disponibilité ;
+- synchronisation des états ;
+- supervision.
+
+### Logs de pare-feu
+
+Les logs de pare-feu sont très utiles pour :
+
+- détecter des scans ;
+- voir des tentatives d’accès ;
+- analyser les flux ;
+- reconstruire un incident.
+
+### Pare-feu versus IDS/IPS
+
+| Outil | Rôle |
+|---|---|
+| Pare-feu | Autorise ou bloque des flux selon des règles. |
+| IDS | Détecte des intrusions ou comportements suspects. |
+| IPS | Détecte et bloque activement certaines attaques. |
+
+Sous Linux, le pare-feu est intégré au noyau, historiquement via `iptables`.
+
+## 7.2 Proxy
+
+Un proxy travaille au niveau applicatif.
+
+Différence avec un pare-feu :
+
+| Pare-feu | Proxy |
+|---|---|
+| Filtre surtout réseau/transport. | Analyse le protocole applicatif. |
+| Décide selon IP, port, état. | Décide selon URL, méthode, contenu, utilisateur. |
+
+### Proxy HTTP
+
+Exemple : `squid`.
+
+Fonctions :
+
+- vérifier le protocole HTTP ;
+- restreindre des domaines ;
+- bloquer certaines méthodes ;
+- filtrer des URLs ;
+- authentifier les utilisateurs ;
+- améliorer la traçabilité.
+
+### Proxy TCP/UDP
+
+Exemple : SOCKS.
+
+Fonctions :
+
+- relayer des connexions TCP/UDP ;
+- authentifier les utilisateurs ;
+- tracer les accès.
+
+Certains protocoles sont moins adaptés au proxy car ils sont distribués, par exemple DNS, SMTP, NTP.
+
+## 7.3 VPN
+
+VPN signifie **Virtual Private Network**.
+
+Objectif :
+
+> Relier deux réseaux ou deux machines comme s’ils appartenaient au même réseau local.
+
+Types de VPN :
+
+- réseau à réseau ;
+- machine à réseau ;
+- machine à machine.
+
+Principe :
+
+- encapsulation réseau ;
+- transport d’un paquet d’un réseau vers un autre ;
+- passage possible sur une infrastructure non fiable.
+
+Attention :
+
+> Un VPN n’est pas forcément chiffré ni authentifié par nature. Cela dépend de la technologie utilisée.
+
+Technologies possibles :
+
+- PPP ;
+- PPPoE ;
+- PPTP ;
+- L2TP ;
+- GRE ;
+- IPSec ;
+- SSL/TLS ;
+- SSH.
+
+Il est possible d’imbriquer des VPN, par exemple :
+
+```text
+L2TP/IPSec
+```
+
+## 7.4 Gestion des services réseau
+
+Principe :
+
+> Les services réseau doivent respecter le système minimal et le strict besoin.
+
+Un service réseau ne doit pas forcément :
+
+- écouter sur toutes les interfaces ;
+- être accessible depuis partout ;
+- tourner en root ;
+- accepter des connexions non authentifiées ;
+- produire peu ou pas de logs.
+
+Bonnes pratiques :
+
+- limiter les interfaces d’écoute ;
+- limiter les adresses sources autorisées ;
+- utiliser TLS ou SSH ;
+- utiliser un pare-feu local ;
+- utiliser tcpwrappers si adapté ;
+- séparer les privilèges ;
+- instrumenter les logs ;
+- limiter les connexions et ressources.
+
+`xinetd` peut être utilisé pour encadrer certains services :
+
+- ACL réseau ;
+- choix de l’interface d’écoute ;
+- logs ;
+- heures d’accès ;
+- limites de connexions ;
+- limites de ressources.
+
+---
+
+# 8. Surveillance du système
+
+## 8.1 syslogd
+
+`syslogd`, `syslog-ng` ou `rsyslogd` collectent les événements système.
+
+Ils collectent notamment :
+
+- logs userland ;
+- logs noyau via `klogd` ;
+- logs locaux ;
+- logs distants.
+
+Port classique :
+
+```text
+514 UDP ou TCP
+```
+
+Les messages sont classés par :
+
+| Élément | Exemple |
+|---|---|
+| Facility | `auth`, `daemon`, `kern`, `mail` |
+| Priority | `info`, `warn`, `err`, `notice` |
+
+Chaque message contient généralement :
+
+- date ;
+- hôte ;
+- service ;
+- niveau ;
+- message.
+
+Pour la sécurité, le transport TCP est préférable à UDP car il est plus fiable.
+
+## 8.2 Analyse des logs
+
+Les logs doivent être :
+
+- collectés ;
+- archivés ;
+- triés ;
+- analysés ;
+- corrélés ;
+- visualisés ;
+- protégés.
+
+Outils cités :
+
+- `logrotate` ;
+- `logsurfer` ;
+- `logcheck` ;
+- `logwatch`.
+
+Dans un environnement HPC, le volume peut être très grand. Il peut devenir nécessaire d’utiliser des techniques de stockage, recherche et corrélation proches du data mining.
+
+Il faut aussi récupérer les logs de SELinux et, si nécessaire, capturer des flux réseau à des endroits stratégiques.
+
+## 8.3 auditd
+
+`auditd` est un service noyau Linux qui génère des logs à partir des appels système.
+
+Il permet de surveiller :
+
+- appels système ;
+- chemins d’exécutables ;
+- fichiers accédés ;
+- UID ;
+- GID ;
+- règles iptables ;
+- accès SELinux refusés.
+
+Le log est ensuite envoyé à `audisp` pour traitement.
+
+Important :
+
+> auditd est un outil de surveillance, pas de contrôle.
+
+Exemples de logs intéressants :
+
+| Log | Intérêt |
+|---|---|
+| `execve` | Commandes lancées avec paramètres par utilisateur. |
+| `iptables` | Connexions réseau par utilisateur. |
+| fichiers | Écritures dans des répertoires sensibles. |
+| `avc` | Accès refusés par SELinux. |
+
+Limites :
+
+- difficile à configurer ;
+- nécessite une bonne connaissance système ;
+- produit beaucoup de logs ;
+- peut avoir un impact sur les performances ;
+- les filtres doivent être optimisés.
+
+## 8.4 Intégrité des logs
+
+Les logs sont essentiels pour la surveillance, donc leur intégrité est critique.
+
+Risque :
+
+> Un attaquant essaie souvent de supprimer ou modifier ses traces.
+
+Mesures possibles :
+
+- architecture dédiée de collecte ;
+- chemin sécurisé d’acheminement ;
+- chiffrement ;
+- authentification ;
+- heartbeat pour vérifier l’acheminement ;
+- stockage distant ;
+- diodes réseau physiques ;
+- port monitoring.
+
+Attention : le chiffrement et l’authentification des logs peuvent coûter en performance et entraîner une perte de logs si les serveurs saturent.
+
+## 8.5 Accounting et collectd
+
+### Accounting
+
+L’accounting mesure l’utilisation des ressources.
+
+Exemples :
+
+- temps CPU ;
+- entrées/sorties ;
+- occupation disque ;
+- usage par utilisateur ;
+- usage par groupe ;
+- usage par population.
+
+Dans le HPC, il sert à :
+
+- facturer ;
+- imputer les coûts ;
+- détecter les abus ;
+- compléter la surveillance.
+
+### collectd
+
+`collectd` collecte les métriques système :
+
+- CPU ;
+- mémoire ;
+- disque ;
+- réseau ;
+- entrées/sorties.
+
+Il les envoie à un serveur qui les stocke pour analyse et visualisation.
+
+## 8.6 Audits
+
+Un audit vérifie l’état d’un système par rapport à un référentiel.
+
+En sécurité, il mesure l’écart entre :
+
+```text
+Politique de sécurité prévue
+          et
+Réalité technique et organisationnelle
+```
+
+But :
+
+- identifier les écarts ;
+- proposer des corrections ;
+- rapprocher le système du référentiel.
+
+### Audit de vulnérabilités
+
+Plus technique qu’un audit général.
+
+Objectif :
+
+- identifier les vulnérabilités présentes ;
+- comparer les versions installées avec les correctifs disponibles ;
+- détecter les services vulnérables ;
+- prioriser les mises à jour.
+
+## 8.7 Test de pénétration
+
+Un test de pénétration consiste à tester la résistance d’un système à une attaque.
+
+Les testeurs jouent le rôle d’attaquants dans un périmètre défini.
+
+Types de périmètres :
+
+- interne ;
+- externe ;
+- boîte blanche ;
+- boîte noire.
+
+Objectifs possibles :
+
+- obtenir des privilèges ;
+- accéder à des données ;
+- rebondir vers d’autres cibles ;
+- tester la détection ;
+- évaluer l’organisation.
+
+À la fin, un rapport fournit :
+
+- failles exploitées ;
+- preuves ;
+- niveau de risque ;
+- recommandations ;
+- priorités de correction.
+
+---
+
+# 9. Exemples de menaces et d’attaques
+
+Le cours cite plusieurs menaces classiques. Voici une définition simple de chacune.
+
+| Menace / attaque | Définition simple |
+|---|---|
+| **Usurpation d’identité** | Se faire passer pour un autre utilisateur. |
+| **IP spoofing** | Falsifier l’adresse IP source d’un paquet. |
+| **Buffer overflow** | Déborder une zone mémoire pour modifier le comportement d’un programme. |
+| **Stack overflow / Heap overflow** | Débordement dans la pile ou le tas mémoire. |
+| **Ingénierie sociale** | Manipuler une personne pour obtenir une information ou une action. |
+| **Phishing** | Tromper une personne avec un faux message ou faux site. |
+| **Local exploit** | Exploiter une faille depuis un accès local déjà obtenu. |
+| **Remote exploit** | Exploiter une faille à distance via le réseau. |
+| **Rootkit** | Outil permettant de cacher une compromission et maintenir un accès. |
+| **Race condition** | Exploiter un mauvais enchaînement temporel entre deux opérations. |
+| **SQL injection** | Injecter du SQL malveillant dans une application. |
+| **Cross-site scripting, XSS** | Injecter du script dans une page web vue par d’autres utilisateurs. |
+| **Man-in-the-Middle** | Se placer entre deux communications pour écouter ou modifier les échanges. |
+| **ARP spoofing** | Falsifier les associations IP/MAC sur un réseau local. |
+| **Ransomware** | Chiffrer ou bloquer les données pour demander une rançon. |
+| **Brute force** | Tester massivement des mots de passe ou clés. |
+
+---
+
+# 10. Checklist de révision
+
+## Concepts de base
+
+- [ ] Savoir définir confidentialité, intégrité, disponibilité, non-répudiation.
+- [ ] Savoir donner un exemple d’atteinte pour chaque propriété.
+- [ ] Savoir distinguer menace, vulnérabilité, risque, impact, mesure, vérification.
+- [ ] Savoir expliquer la boucle d’analyse de risque.
+
+## HPC
+
+- [ ] Savoir expliquer pourquoi le HPC est particulier en sécurité.
+- [ ] Comprendre le rôle du réseau comme point d’entrée.
+- [ ] Comprendre le problème du poste client non maîtrisé.
+- [ ] Comprendre le besoin de cloisonnement entre utilisateurs.
+- [ ] Comprendre pourquoi la puissance de calcul attire les attaquants.
+- [ ] Comprendre le rôle de l’accounting et de la traçabilité.
+
+## Grands principes
+
+- [ ] Système minimal.
+- [ ] Interdiction par défaut.
+- [ ] Séparation des privilèges.
+- [ ] Politique de mises à jour.
+- [ ] Surveillance.
+- [ ] Sécurité en profondeur.
+- [ ] Architecture cloisonnée.
+
+## Sécurité système
+
+- [ ] Différence identification/authentification.
+- [ ] Facteurs d’authentification.
+- [ ] Authentification locale, centralisée, SSO.
+- [ ] Rôle de PAM.
+- [ ] Catégories PAM : `auth`, `account`, `password`, `session`.
+- [ ] Contrôles PAM : `requisite`, `required`, `sufficient`, `optional`.
+- [ ] Permissions Unix et notation octale.
+- [ ] setuid, setgid, sticky bit.
+- [ ] ACL : `setfacl`, `getfacl`.
+- [ ] chroot et ses limites.
+- [ ] cgroups et namespaces.
+- [ ] su versus sudo.
+- [ ] Compte captif et shell restreint.
+- [ ] LUKS et gestion des clés.
+- [ ] DAC versus MAC.
+- [ ] Rôle de SELinux.
+
+## Sécurité réseau
+
+- [ ] Pare-feu stateless/stateful.
+- [ ] NAT.
+- [ ] IDS versus IPS versus pare-feu.
+- [ ] Proxy applicatif.
+- [ ] VPN et encapsulation.
+- [ ] Gestion stricte des services réseau.
+
+## Surveillance
+
+- [ ] syslogd, rsyslogd.
+- [ ] Facility et priority.
+- [ ] Analyse et corrélation des logs.
+- [ ] auditd.
+- [ ] Intégrité des logs.
+- [ ] Accounting et collectd.
+- [ ] Audit versus test de pénétration.
+
+---
+
+# 11. Questions d’examen possibles
+
+## Q1. Quelles sont les quatre propriétés fondamentales de la sécurité informatique ?
+
+Réponse : confidentialité, intégrité, disponibilité et non-répudiation.
+
+## Q2. Quelle est la différence entre une menace et une vulnérabilité ?
+
+Réponse : une menace est un acteur ou événement capable de causer un dommage ; une vulnérabilité est une faiblesse qui peut être exploitée par cette menace.
+
+## Q3. Comment définir un risque ?
+
+Réponse : un risque est la possibilité qu’une menace exploite une vulnérabilité et cause un impact. Il dépend de la probabilité et de la gravité de l’impact.
+
+## Q4. Pourquoi le HPC pose-t-il des problèmes particuliers de sécurité ?
+
+Réponse : car il est partagé par plusieurs utilisateurs, accessible par réseau, souvent connecté à des postes non maîtrisés, très puissant, critique en disponibilité, et produit beaucoup de traces à surveiller.
+
+## Q5. Pourquoi faut-il installer un système minimal ?
+
+Réponse : pour réduire la surface d’attaque, limiter les vulnérabilités, faciliter les mises à jour, simplifier la surveillance et éviter de fournir des outils inutiles à un intrus.
+
+## Q6. Que signifie “tout interdire par défaut” ?
+
+Réponse : toute action ou connexion est interdite sauf si elle est explicitement autorisée. Cela évite que les cas non prévus soient acceptés par erreur.
+
+## Q7. Qu’est-ce que la sécurité en profondeur ?
+
+Réponse : c’est le fait de placer plusieurs barrières de sécurité complémentaires à différents niveaux : réseau, système, application, authentification, logs, architecture.
+
+## Q8. Quelle est la différence entre identification et authentification ?
+
+Réponse : l’identification indique qui on prétend être ; l’authentification prouve que l’on est bien cette personne.
+
+## Q9. À quoi sert PAM ?
+
+Réponse : PAM permet de centraliser et paramétrer l’authentification des applications sous Unix/Linux, application par application.
+
+## Q10. Que signifie `0755` en droits Unix ?
+
+Réponse : propriétaire `rwx`, groupe `r-x`, autres `r-x`.
+
+## Q11. Que fait le bit setuid ?
+
+Réponse : il permet à un fichier exécutable de s’exécuter avec l’identité du propriétaire du fichier.
+
+## Q12. À quoi sert chroot ?
+
+Réponse : chroot limite la vue du système de fichiers d’un processus en lui faisant croire qu’un répertoire donné est la racine `/`.
+
+## Q13. Quelles sont les limites de chroot ?
+
+Réponse : il ne protège que le système de fichiers, peut être difficile à maintenir, ne protège pas contre les failles noyau, et des méthodes de sortie peuvent exister.
+
+## Q14. À quoi servent les cgroups ?
+
+Réponse : ils limitent, isolent, comptabilisent et priorisent les ressources utilisées par des groupes de processus.
+
+## Q15. Quelle est la différence entre su et sudo ?
+
+Réponse : `su` change d’utilisateur en connaissant le mot de passe du compte cible ; `sudo` autorise certaines commandes selon une politique, avec meilleure traçabilité.
+
+## Q16. Quelle est la différence entre DAC et MAC ?
+
+Réponse : en DAC, le propriétaire décide des accès ; en MAC, le système impose une politique d’accès basée sur des labels.
+
+## Q17. À quoi sert SELinux ?
+
+Réponse : SELinux implémente un contrôle d’accès obligatoire pour confiner les applications et limiter les effets d’une compromission, même avec des privilèges élevés.
+
+## Q18. Quelle est la différence entre un pare-feu et un proxy ?
+
+Réponse : un pare-feu filtre les flux réseau selon des règles IP/TCP/UDP ; un proxy agit au niveau applicatif et peut analyser les requêtes.
+
+## Q19. Un VPN est-il toujours chiffré ?
+
+Réponse : non. Un VPN repose sur l’encapsulation ; le chiffrement et l’authentification dépendent de la technologie utilisée.
+
+## Q20. Pourquoi faut-il protéger l’intégrité des logs ?
+
+Réponse : parce qu’un attaquant cherche souvent à effacer ou modifier ses traces ; des logs fiables sont nécessaires pour détecter, enquêter et prouver les actions.
+
+## Q21. Quelle est la différence entre audit et test de pénétration ?
+
+Réponse : un audit vérifie l’écart entre une politique et la réalité ; un test de pénétration simule une attaque pour tester la résistance du système.
+
+---
+
+# Résumé final à retenir
+
+La sécurité d’un environnement HPC repose sur une idée centrale :
+
+> Protéger un système partagé, puissant, critique et exposé au réseau en réduisant la surface d’attaque, en cloisonnant les utilisateurs et services, en appliquant le moindre privilège, en surveillant fortement le système et en vérifiant régulièrement les mesures mises en place.
+
+Les notions les plus importantes à maîtriser sont :
+
+- confidentialité, intégrité, disponibilité, non-répudiation ;
+- menace, vulnérabilité, risque, impact, mesure, vérification ;
+- spécificités HPC : puissance, partage, disponibilité, traçabilité ;
+- système minimal et interdiction par défaut ;
+- séparation des privilèges et mises à jour ;
+- PAM, permissions Unix, ACL, chroot, cgroups, sudo, LUKS, SELinux ;
+- pare-feu, proxy, VPN ;
+- logs, auditd, accounting, collectd, audits et tests de pénétration.
