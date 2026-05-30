@@ -1,7 +1,18 @@
-# Note complète — Architecture d’un système d’exploitation : Allocation mémoire
+# Notes de cours — Allocation Mémoire
 
-> Cours : **Architecture d’un système d’exploitation — Allocation mémoire**  
-> Thèmes : mémoire physique, mémoire virtuelle, malloc/free, pagination, swap, TLB, remplacement de pages, NUMA, allocation mémoire en HPC, Unified Memory GPU.
+> **Module** : Architecture OS — ARSE · ENSIIE  
+> **Version EN** : [notes.en.md](notes.en.md)  
+> **Thèmes** : mémoire physique, mémoire virtuelle, malloc/free, pagination, swap, TLB, remplacement de pages, NUMA, allocation mémoire en HPC, Unified Memory GPU.
+
+---
+
+> **Concepts essentiels**
+> - Page (logique) → Frame (physique) via table des pages ; TLB = cache de traductions.
+> - Défaut de page = page absente de la RAM → chargement depuis swap.
+> - Algorithmes de remplacement : FIF (optimal), LRU (efficace), Clock (approximation de LRU), FIFO (simple).
+> - NUMA : accéder à la mémoire locale est rapide ; first-touch = la page va sur le nœud du premier thread qui y accède.
+> - Unified Memory CUDA : pointeur unique CPU/GPU + migration automatique (Pascal+).
+> - Thrashing = trop de swap → working set pour y remédier.
 
 ---
 

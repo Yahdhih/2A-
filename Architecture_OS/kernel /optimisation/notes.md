@@ -1,10 +1,23 @@
-# Notes complètes — Optimisations Système et Noyau
+# Notes de cours — Optimisations Système et Noyau
 
-> Cours : **Optimisations Système et Noyau**  
-> Auteur du support : **Aurélien Cedeyn**  
-> École : **ENSIIE**  
-> Année : **2021–2022**  
-> Format : fiche complète type `README.md`
+> **Module** : Architecture OS — ARSE · ENSIIE  
+> **Auteur du support** : Aurélien Cedeyn  
+> **Année** : 2021–2022  
+> **Version EN** : [notes.en.md](notes.en.md)
+
+---
+
+> **Règle d'or** : mesurer → comprendre → modifier → re-mesurer. Ne jamais optimiser sans données.
+>
+> **Commandes clés**
+> ```
+> ulimit -a                        # limites du processus
+> sysctl -a                        # paramètres noyau
+> numactl --hardware               # topologie NUMA
+> perf record / perf report        # profiling
+> cat /proc/cmdline                # options de boot
+> lsmod / modinfo <module>         # modules noyau
+> ```
 
 ---
 

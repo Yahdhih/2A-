@@ -1,7 +1,18 @@
-# Note complète — Architecture d’un système d’exploitation : Ordonnancement
+# Notes de cours — Ordonnancement (Scheduling)
 
-> Cours : **Architecture d’un système d’exploitation — Ordonnancement**  
-> Thèmes principaux : processus, primitives UNIX, `fork`, `wait`, `execve`, IPC, signaux, sémaphores, threads, algorithmes d’ordonnancement, ordonnancement multiprocesseur, ordonnanceurs Linux `O(n)`, `O(1)` et **CFS**.
+> **Module** : Architecture OS — ARSE · ENSIIE  
+> **Version EN** : [notes.en.md](notes.en.md)  
+> **Thèmes** : processus, primitives UNIX, `fork`, `wait`, `execve`, IPC, signaux, sémaphores, threads, algorithmes d’ordonnancement, ordonnancement multiprocesseur, ordonnanceurs Linux `O(n)`, `O(1)` et **CFS**.
+
+---
+
+> **Points clés à retenir**
+> - `fork` duplique un processus (copy-on-write) ; retourne le PID du fils dans le parent, 0 dans le fils.
+> - `execve` remplace l’image mémoire sans changer le PID.
+> - CFS choisit la tâche avec le plus petit `vruntime`, stockée dans un arbre rouge-noir.
+> - Ordonnanceur `O(1)` : files active/expired + bitmap pour sélection en temps constant.
+> - Famine = solution par vieillissement des priorités.
+> - Migration de processus entre CPU = coûteuse (cache invalidé).
 
 ---
 

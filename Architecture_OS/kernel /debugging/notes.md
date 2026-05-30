@@ -1,9 +1,24 @@
-# Note complète - Debugging Système et Noyau
+# Notes de cours — Debugging Système et Noyau
 
-> Cours : **Debugging Système et Noyau**  
-> Auteur du support : Aurélien Cedeyn - ENSIIE  
-> Année : 2021-2022  
-> Objectif de cette note : fournir une fiche README complète, structurée et directement révisable pour comprendre le debugging en espace utilisateur et en espace noyau.
+> **Module** : Architecture OS — ARSE · ENSIIE  
+> **Auteur du support** : Aurélien Cedeyn  
+> **Année** : 2021–2022  
+> **Version EN** : [notes.en.md](notes.en.md)  
+> **Objectif** : comprendre le debugging en espace utilisateur et en espace noyau.
+
+---
+
+> **Outils à choisir selon le problème**
+>
+> | Problème | Outil |
+> |---|---|
+> | Voir les processus | `ps aux`, `top` |
+> | Tracer les syscalls | `strace` |
+> | Tracer les appels libc | `ltrace` |
+> | Programme qui plante | `gdb`, core file |
+> | Logs noyau | `dmesg -T` |
+> | Tracer fonctions noyau | `perf`, `ftrace`, BPF |
+> | Kernel panic | `kdump`, `crash` |
 
 ---
 

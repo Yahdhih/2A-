@@ -1,9 +1,25 @@
-# Notes complètes — Local Filesystems
+# Notes de cours — Systèmes de fichiers locaux
 
-> Cours : **Local Filesystems**  
-> Module : **ENSIIE | ARSE**  
-> Auteur du support : Jacques-Charles Lafoucriere  
-> Objectif de cette note : comprendre les concepts fondamentaux des systèmes de fichiers locaux, les supports de stockage, la couche VFS Linux, FUSE, et plusieurs familles de systèmes de fichiers : DOS/FAT, FFS, LFS, Ext2/3/4, ZFS/OpenZFS, NOVA et LTFS.
+> **Module** : Architecture OS — ARSE · ENSIIE  
+> **Auteur du support** : Jacques-Charles Lafoucrière  
+> **Version EN** : [notes.en.md](notes.en.md)  
+> **Thèmes** : supports de stockage, VFS Linux, FUSE, DOS/FAT, FFS, LFS, Ext2/3/4, ZFS/OpenZFS, NOVA, LTFS.
+
+---
+
+> **Synthèse rapide**
+>
+> | Système | Support cible | Idée clé |
+> |---|---|---|
+> | FAT | Disquettes / petits appareils | Table d'allocation chainée |
+> | FFS | HDD | Localité (cylinder groups) |
+> | LFS | HDD (petites écritures) | Tout écrire séquentiellement |
+> | Ext4 | Linux généraliste | FFS + journal + extents |
+> | ZFS | Stockage avancé | CoW + checksum + pool |
+> | NOVA | Mémoire persistante | Log par inode, accès direct |
+> | LTFS | Bandes magnétiques | Index XML + données séquentielles |
+>
+> **Principe fondamental** : le design d'un système de fichiers dépend toujours du support physique visé.
 
 ---
 
